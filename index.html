@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#176eb5">
+  <meta name="description" content="Школьная акция ко Всемирному дню ребёнка. Права ребёнка, уважение и безопасность.">
+  <title>Детство без жестокости | 20 ноября</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <a class="brand" href="#" onclick="goHome();return false;">
+    <span class="brand-icon">♥</span>
+    <span>Бала құқығы <small>Права ребёнка</small></span>
+  </a>
+  <div class="lang-switch">
+    <button id="ruBtn" class="active" onclick="setLanguage('ru')">RU</button>
+    <button id="kzBtn" onclick="setLanguage('kz')">KZ</button>
+  </div>
+</header>
+
+<main>
+  <section id="home" class="page active">
+    <div class="hero">
+      <div class="hero-tag" data-i18n="date">20 НОЯБРЯ · МЕЖДУНАРОДНЫЙ ДЕНЬ РЕБЁНКА</div>
+      <div class="hero-art">👧🏻 👦🏻 🧒🏻</div>
+      <h1 data-i18n="title">Детство без неуважения и жестокости</h1>
+      <p data-i18n="subtitle">Каждый ребёнок имеет право на счастливое, безопасное и достойное детство.</p>
+      <button class="primary-btn" onclick="showPage('register')" data-i18n="start">Пройти тест →</button>
+    </div>
+
+    <div class="intro-grid">
+      <article class="info-card">
+        <span>🛡️</span>
+        <h3 data-i18n="right1">Право на защиту</h3>
+        <p data-i18n="right1d">Каждый ребёнок должен быть защищён от насилия.</p>
+      </article>
+      <article class="info-card">
+        <span>🤝</span>
+        <h3 data-i18n="right2">Право на уважение</h3>
+        <p data-i18n="right2d">Мнение и достоинство каждого ребёнка важны.</p>
+      </article>
+      <article class="info-card">
+        <span>📚</span>
+        <h3 data-i18n="right3">Право на образование</h3>
+        <p data-i18n="right3d">Каждый ребёнок имеет право учиться и развиваться.</p>
+      </article>
+    </div>
+
+    <div class="about">
+      <h2 data-i18n="aboutTitle">О нашей акции</h2>
+      <p data-i18n="aboutText">20 ноября во всём мире отмечается Всемирный день ребёнка. Эта акция напоминает о важности защиты прав детей, взаимного уважения и недопустимости жестокого обращения.</p>
+    </div>
+  </section>
+
+  <section id="register" class="page">
+    <div class="form-card">
+      <div class="step-label" data-i18n="step1">ШАГ 1 · ДАННЫЕ УЧАСТНИКА</div>
+      <h2 data-i18n="regTitle">Регистрация участника</h2>
+      <p class="muted" data-i18n="regDesc">Заполни данные, чтобы начать тестирование.</p>
+
+      <label data-i18n="surname">Фамилия</label>
+      <input id="surname" maxlength="60" autocomplete="family-name" placeholder="Фамилия">
+
+      <label data-i18n="firstname">Имя</label>
+      <input id="firstName" maxlength="60" autocomplete="given-name" placeholder="Имя">
+
+      <label data-i18n="grade">Класс</label>
+      <div class="class-select">
+        <select id="grade">
+          <option value="">—</option>
+          <option value="1">1</option><option value="2">2</option>
+          <option value="3">3</option><option value="4">4</option>
+          <option value="5">5</option><option value="6">6</option>
+          <option value="7">7</option><option value="8">8</option>
+          <option value="9">9</option><option value="10">10</option>
+          <option value="11">11</option>
+        </select>
+        <select id="section">
+          <option value="">Буква</option>
+          <option>А</option><option>Ә</option><option>Б</option>
+          <option>В</option><option>Г</option><option>Д</option>
+          <option>Е</option><option>Ж</option><option>З</option>
+          <option>И</option><option>К</option><option>Л</option>
+          <option>М</option><option>Н</option><option>О</option>
+        </select>
+      </div>
+
+      <div id="formError" class="error"></div>
+      <button class="primary-btn full" onclick="startQuiz()" data-i18n="continue">Продолжить →</button>
+      <button class="back-btn" onclick="showPage('home')" data-i18n="back">Назад</button>
+    </div>
+  </section>
+
+  <section id="quiz" class="page">
+    <div class="quiz-card">
+      <div class="quiz-top">
+        <span id="questionCount">Вопрос 1 / 10</span>
+        <span id="classDisplay"></span>
+      </div>
+      <div class="progress"><div id="progressBar"></div></div>
+      <div class="question-label" data-i18n="questionLabel">ВОПРОС</div>
+      <h2 id="questionText"></h2>
+      <div id="answerOptions"></div>
+      <div id="quizError" class="error"></div>
+      <button class="primary-btn full" id="nextBtn" onclick="nextQuestion()">Следующий вопрос →</button>
+    </div>
+  </section>
+
+  <section id="result" class="page">
+    <div class="result-card">
+      <div class="result-icon">🏆</div>
+      <h2 data-i18n="finished">Тест завершён!</h2>
+      <p id="participantName"></p>
+      <div id="scoreDisplay" class="score"></div>
+      <p id="resultMessage"></p>
+      <div id="savingStatus" class="saving-status"></div>
+      <button class="primary-btn full" onclick="goHome()" data-i18n="home">На главную</button>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <p>20 NOVEMBER · WORLD CHILDREN'S DAY</p>
+  <p data-i18n="footer">Вместе за детство без жестокости ❤️</p>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
