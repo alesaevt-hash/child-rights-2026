@@ -1,283 +1,385 @@
+"use strict";
+
+// ==========================================
+// CHILD RIGHTS 2026 — TEST SYSTEM
+// ==========================================
+
 const API_URL = "https://script.google.com/macros/s/AKfycbzi_0mF2WRkYwQDlZxmc-qVlfkNLPiCetrxegci-KE878_atUdykrUZzcyLHHoU_noEEw/exec";
 
+const app = document.createElement("div");
+app.id = "childRightsApp";
+document.body.innerHTML = "";
+document.body.appendChild(app);
+
+const style = document.createElement("style");
+style.textContent = `
+*{box-sizing:border-box}
+body{margin:0;background:#f1f6fc;font-family:Arial,sans-serif;color:#172b4d}
+#childRightsApp{max-width:850px;margin:25px auto;padding:15px}
+.panel{background:white;border-radius:20px;padding:28px;box-shadow:0 8px 30px #17345b12;margin-bottom:18px}
+h1{font-size:30px;margin:0 0 12px}
+h2{font-size:23px}
+p{line-height:1.6;color:#52647d}
+.logo{text-align:center;font-size:42px;margin-bottom:12px}
+.center{text-align:center}
+input,select{width:100%;padding:14px;border:1px solid #d7e0eb;border-radius:10px;margin:7px 0 15px;font-size:16px;background:white}
+button{border:0;border-radius:11px;padding:14px 20px;font-size:16px;font-weight:bold;cursor:pointer}
+.primary{background:#1769d2;color:white;width:100%}
+.secondary{background:#eaf2fc;color:#1769d2}
+.lang{display:flex;gap:10px;justify-content:center;margin-bottom:18px}
+.lang button{flex:1}
+.option{display:block;width:100%;text-align:left;margin:10px 0;background:#f2f6fb;color:#263c5b;border:2px solid transparent}
+.option.selected{border-color:#1769d2;background:#e7f1ff}
+.option:disabled{cursor:default}
+.progress{height:9px;background:#e4ebf4;border-radius:20px;overflow:hidden;margin:18px 0}
+.progress div{height:100%;background:#1769d2;transition:.3s}
+.small{font-size:13px;color:#77869a}
+.hidden{display:none!important}
+.result{font-size:48px;font-weight:bold;color:#1769d2}
+.footer{text-align:center;font-size:12px;color:#8290a3;padding:15px}
+@media(max-width:550px){#childRightsApp{margin:5px auto;padding:10px}.panel{padding:20px}h1{font-size:25px}}
+`;
+document.head.appendChild(style);
+
+// ==========================================
+// QUESTIONS
+// Four age groups: 1-4, 5-7, 8-9, 10-11
+// Ten questions in each group.
+// ==========================================
+
+const questionBank = {
+ru: {
+1: [
+["Какое право есть у каждого ребёнка?",["На образование","Обижать других","Ломать вещи","Нарушать правила"],0],
+["Кто заботится о ребёнке?",["Только друзья","Родители или законные представители","Только соседи","Никто"],1],
+["Что делать, если тебя обижают?",["Молчать","Обижать в ответ","Рассказать надёжному взрослому","Скрывать проблему"],2],
+["Имеет ли ребёнок право учиться?",["Только летом","Только отличники","Нет","Да"],3],
+["Как нужно относиться к одноклассникам?",["С уважением","С насмешками","С грубостью","С безразличием"],0],
+["Можно ли бить другого ребёнка?",["Если он младше","Нет, это недопустимо","Если никто не видит","Если он ошибся"],1],
+["Что делать, если друг подвергается травле?",["Смеяться","Снимать видео","Поддержать его и обратиться за помощью","Игнорировать"],2],
+["Имеет ли ребёнок право на отдых?",["Нет","Только летом","Только после школы","Да"],3],
+["Кто может помочь в опасной ситуации?",["Родители или надёжный взрослый","Незнакомец","Случайный прохожий","Никто"],0],
+["Что означает равенство детей?",["Все должны быть одинаковыми","Все дети имеют равные права","Права есть только у старших","Права есть только у отличников"],1]
+],
+2: [
+["Что означает право на образование?",["Можно не учиться","Учиться могут только взрослые","Каждый ребёнок должен иметь возможность учиться","Можно учиться только дома"],2],
+["Что делать, если ты обидел одноклассника?",["Обвинить другого","Сделать вид, что ничего не произошло","Продолжать смеяться","Извиниться и исправить ситуацию"],3],
+["Что такое личная безопасность?",["Защита от опасности","Возможность делать всё без правил","Право командовать другими","Запрет общаться"],0],
+["Можно ли публиковать чужую фотографию без разрешения?",["Всегда можно","Нужно учитывать согласие человека","Можно, если смешно","Можно только ночью"],1],
+["Если незнакомец зовёт тебя с собой, нужно...",["Согласиться","Пойти за подарком","Не идти и сообщить взрослому","Скрыть это"],2],
+["Что означает уважение к другим?",["Смеяться над ошибками","Не слушать других","Командовать всеми","Учитывать чувства и мнение людей"],3],
+["Как вести себя во время спора?",["Спокойно разговаривать и слушать","Кричать","Оскорблять","Драться"],0],
+["Кто должен уважать права ребёнка?",["Только друзья","Все люди","Только учителя","Только родители"],1],
+["Что делать при угрозах в интернете?",["Отправить пароль","Встретиться с незнакомцем","Сохранить доказательства и рассказать взрослому","Отправить личные данные"],2],
+["Зачем нужны школьные правила?",["Чтобы запрещать всё","Чтобы наказывать всех","Чтобы никто не общался","Чтобы обеспечить безопасность и порядок"],3]
+],
+3: [
+["Что такое Конвенция о правах ребёнка?",["Международный документ о правах детей","Школьное расписание","Спортивные правила","Список оценок"],0],
+["Что означает право выражать мнение?",["Можно оскорблять людей","Можно высказывать мысли уважительно","Нужно всегда спорить","Мнение ребёнка не важно"],1],
+["Что такое буллинг?",["Дружеская игра","Одна случайная ошибка","Систематическая травля человека","Совместная учёба"],2],
+["Что делать, если ты видишь травлю?",["Поддержать обидчика","Снять видео ради развлечения","Распространить слухи","Не поддерживать травлю и обратиться за помощью"],3],
+["Имеет ли ребёнок право на медицинскую помощь?",["Да","Нет","Только отличники","Только взрослые"],0],
+["Что такое дискриминация?",["Помощь людям","Необоснованное неравное отношение к человеку","Дружба","Соблюдение правил"],1],
+["Можно ли унижать человека из-за внешности?",["Да, если это шутка","Да, если все смеются","Нет, это неуважение","Только в интернете"],2],
+["Что такое обязанности?",["Только просьбы","То, что можно игнорировать","Чужие права","То, что человек должен выполнять"],3],
+["Почему нельзя распространять чужие секреты?",["Это нарушает доверие и личную жизнь","Это всегда смешно","Это полезно","Так быстрее"],0],
+["Что делать, если ребёнку страшно дома или в школе?",["Скрывать проблему","Обратиться к надёжному взрослому","Обвинять себя","Молчать"],1]
+],
+4: [
+["Когда была принята Конвенция ООН о правах ребёнка?",["1 января 2000 года","10 декабря 1948 года","20 ноября 1989 года","25 октября 1991 года"],2],
+["До какого возраста Конвенция считает человека ребёнком?",["До 14 лет","До 16 лет","До 21 года","До 18 лет"],3],
+["Что означает принцип наилучших интересов ребёнка?",["При решениях прежде всего учитывается благополучие ребёнка","Исполняется любое желание ребёнка","Мнение ребёнка никогда не учитывается","Важны только интересы взрослых"],0],
+["Что относится к праву на отдых?",["Работа без перерывов","Время для отдыха, игр и интересов","Запрет на прогулки","Только домашние задания"],1],
+["Что такое дискриминация?",["Помощь нуждающимся","Дружеское общение","Необоснованное неравное отношение","Соблюдение правил"],2],
+["Что делать, если одноклассника исключают из игры из-за особенностей?",["Поддержать исключение","Не замечать","Присоединиться к насмешкам","Предложить играть вместе"],3],
+["Какое право защищает личную переписку?",["Право на частную жизнь","Право на наказание","Право на оценки","Право командовать"],0],
+["Что означает право ребёнка быть услышанным?",["Ребёнок всегда принимает окончательное решение","Его мнение должны выслушать и учитывать","Ребёнок не должен говорить","Он может перебивать всех"],1],
+["Кто несёт основную ответственность за воспитание ребёнка?",["Соседи","Одноклассники","Родители или законные представители","Случайные люди"],2],
+["Как реагировать на жестокое обращение?",["Считать это нормой","Скрывать происходящее","Обвинять пострадавшего","Обратиться за помощью"],3]
+]
+},
+kz: {
+1: [
+["Әрбір баланың қандай құқығы бар?",["Білім алу құқығы","Басқаларды ренжіту","Заттарды сындыру","Ережелерді бұзу"],0],
+["Балаға кім қамқорлық жасауы керек?",["Тек достары","Ата-анасы немесе заңды өкілдері","Тек көршілері","Ешкім"],1],
+["Егер сені ренжітсе, не істеу керек?",["Үндемеу","Қарымта ретінде ренжіту","Сенімді ересек адамға айту","Мәселені жасыру"],2],
+["Баланың білім алуға құқығы бар ма?",["Тек жазда","Тек үздік оқушылардың","Жоқ","Иә"],3],
+["Сыныптастарыңа қалай қарау керек?",["Құрметпен","Мазақтап","Дөрекілікпен","Немқұрайдылықпен"],0],
+["Басқа баланы ұруға бола ма?",["Ол кішкентай болса","Жоқ, бұған жол берілмейді","Ешкім көрмесе","Ол қателессе"],1],
+["Досыңды біреу қорласа, не істейсің?",["Күлу","Видеоға түсіру","Оған қолдау көрсетіп, көмек сұрау","Елемеу"],2],
+["Баланың демалуға құқығы бар ма?",["Жоқ","Тек жазда","Тек сабақтан кейін","Иә"],3],
+["Қауіпті жағдайда кім көмектесе алады?",["Ата-анасы немесе сенімді ересек адам","Бейтаныс адам","Кездейсоқ жолаушы","Ешкім"],0],
+["Балалардың теңдігі нені білдіреді?",["Барлығы бірдей болуы керек","Барлық баланың құқықтары тең","Тек үлкендердің құқығы бар","Тек үздіктердің құқығы бар"],1]
+],
+2: [
+["Білім алу құқығы нені білдіреді?",["Оқымаса да болады","Тек ересектер оқи алады","Әр баланың білім алуға мүмкіндігі болуы керек","Тек үйде оқуға болады"],2],
+["Егер сыныптасыңды ренжітіп алсаң, не істеу керек?",["Басқаны кінәлау","Ештеңе болмағандай жүру","Күлу","Кешірім сұрап, жағдайды түзету"],3],
+["Жеке қауіпсіздік дегеніміз не?",["Қауіп-қатерден қорғалу","Ережесіз әрекет ету","Басқаларға бұйрық беру","Адамдармен сөйлесуге тыйым салу"],0],
+["Басқа адамның фотосын рұқсатсыз жариялауға бола ма?",["Әрқашан болады","Адамның келісімін ескеру қажет","Сурет күлкілі болса болады","Тек түнде болады"],1],
+["Бейтаныс адам сені өзімен бірге шақырса, не істейсің?",["Келісесің","Сыйлық алу үшін барасың","Бармай, ересек адамға хабарлайсың","Бұл туралы ешкімге айтпайсың"],2],
+["Басқаларды құрметтеу дегеніміз не?",["Қателіктеріне күлу","Басқаларды тыңдамау","Барлығына бұйрық беру","Адамдардың сезімі мен пікірін ескеру"],3],
+["Келіспеушілік кезінде қалай әрекет ету керек?",["Сабырмен сөйлесіп, тыңдау","Айқайлау","Қорлау","Төбелесу"],0],
+["Баланың құқықтарын кім құрметтеуі керек?",["Тек достары","Барлық адам","Тек мұғалімдер","Тек ата-анасы"],1],
+["Интернетте біреу қорқытса, не істеу керек?",["Құпиясөзді жіберу","Бейтаныспен кездесу","Дәлелдерді сақтап, ересек адамға айту","Жеке деректерді жіберу"],2],
+["Мектеп ережелері не үшін қажет?",["Барлығына тыйым салу үшін","Барлығын жазалау үшін","Ешкім сөйлеспеуі үшін","Қауіпсіздік пен тәртіпті қамтамасыз ету үшін"],3]
+],
+3: [
+["Бала құқықтары туралы конвенция дегеніміз не?",["Балалардың құқықтары туралы халықаралық құжат","Мектеп кестесі","Спорт ережелері","Бағалар тізімі"],0],
+["Өз пікірін білдіру құқығы нені білдіреді?",["Адамдарды қорлауға болады","Өз ойын құрметпен айтуға болады","Әрдайым дауласу керек","Баланың пікірі маңызды емес"],1],
+["Буллинг дегеніміз не?",["Достық ойын","Бір реттік кездейсоқ қателік","Адамды жүйелі түрде қудалау және қорлау","Бірге оқу"],2],
+["Қудалауды көрсең, не істеу керек?",["Қудалаушыны қолдау","Көңіл көтеру үшін видеоға түсіру","Өсек тарату","Қудалауды қолдамай, көмекке жүгіну"],3],
+["Баланың медициналық көмек алуға құқығы бар ма?",["Иә","Жоқ","Тек үздік оқушының","Тек ересектердің"],0],
+["Кемсітушілік дегеніміз не?",["Адамдарға көмектесу","Адамға негізсіз тең емес көзқарас таныту","Достық қарым-қатынас","Ережелерді сақтау"],1],
+["Адамды сыртқы келбеті үшін қорлауға бола ма?",["Иә, әзіл болса","Иә, бәрі күлсе","Жоқ, бұл құрметсіздік","Тек интернетте"],2],
+["Міндеттер дегеніміз не?",["Тек өтініштер","Елемеуге болатын нәрселер","Басқалардың құқықтары","Орындауға тиіс әрекеттер"],3],
+["Басқа адамның құпиясын неге таратуға болмайды?",["Бұл сенім мен жеке өмірге нұқсан келтіреді","Бұл күлкілі","Бұл пайдалы","Бұл жылдам"],0],
+["Бала үйде немесе мектепте қорықса, не істеуі керек?",["Мәселені жасыру","Сенімді ересек адамға жүгіну","Өзін кінәлау","Үндемеу"],1]
+],
+4: [
+["БҰҰ-ның Бала құқықтары туралы конвенциясы қашан қабылданды?",["2000 жылғы 1 қаңтарда","1948 жылғы 10 желтоқсанда","1989 жылғы 20 қарашада","1991 жылғы 25 қазанда"],2],
+["Конвенция бойынша адам қай жасқа дейін бала болып есептеледі?",["14 жасқа дейін","16 жасқа дейін","21 жасқа дейін","18 жасқа дейін"],3],
+["Баланың ең жақсы мүдделерін қамтамасыз ету қағидаты нені білдіреді?",["Шешім қабылдағанда баланың әл-ауқатын бірінші кезекте ескеру","Баланың кез келген қалауын орындау","Баланың пікірін елемеу","Тек ересектердің мүддесін ескеру"],0],
+["Демалу құқығына не жатады?",["Үзіліссіз жұмыс","Демалуға, ойнауға және қызығушылықпен айналысуға уақыт","Серуендеуге тыйым салу","Тек үй тапсырмасын орындау"],1],
+["Кемсітушілік дегеніміз не?",["Мұқтаж адамдарға көмектесу","Достық қарым-қатынас","Негізсіз тең емес көзқарас таныту","Ережелерді сақтау"],2],
+["Сыныптасыңды ерекшелігіне байланысты ойынға қоспаса, не істейсің?",["Шеттетуді қолдау","Елемеу","Мазақтауға қосылу","Бірге ойнауды ұсыну"],3],
+["Жеке хат алмасуды қорғау қандай құқыққа жатады?",["Жеке өмірге қол сұқпаушылық құқығы","Жазалау құқығы","Баға алу құқығы","Бұйрық беру құқығы"],0],
+["Баланың пікірін тыңдау құқығы нені білдіреді?",["Бала әрқашан соңғы шешімді қабылдайды","Оның пікірін тыңдап, ескеру керек","Бала сөйлемеуі керек","Ол бәрінің сөзін бөле алады"],1],
+["Баланы тәрбиелеу үшін негізгі жауапкершілікті кім атқарады?",["Көршілер","Сыныптастар","Ата-анасы немесе заңды өкілдері","Кездейсоқ адамдар"],2],
+["Қатыгез қарым-қатынасқа тап болғанда не істеу керек?",["Мұны қалыпты жағдай деп санау","Жасыру","Жәбірленушіні кінәлау","Көмекке жүгіну"],3]
+]
+}
+};
+
+// ==========================================
+// CLASS-SPECIFIC QUESTION SELECTION
+// ==========================================
+
+function getGroup(grade) {
+  if (grade <= 4) return 1;
+  if (grade <= 7) return 2;
+  if (grade <= 9) return 3;
+  return 4;
+}
+
 let language = "ru";
-let participant = {};
-let questions = [];
-let currentQuestion = 0;
+let currentQuestions = [];
+let currentIndex = 0;
 let score = 0;
-let selected = null;
-let startedAt = 0;
 let answersLog = [];
+let selectedAnswer = null;
+let startedAt = 0;
+let student = {};
 
 const translations = {
-  ru: {
-    date:"20 НОЯБРЯ · МЕЖДУНАРОДНЫЙ ДЕНЬ РЕБЁНКА",
-    title:"Детство без неуважения и жестокости",
-    subtitle:"Каждый ребёнок имеет право на счастливое, безопасное и достойное детство.",
-    start:"Пройти тест →",
-    right1:"Право на защиту",
-    right1d:"Каждый ребёнок должен быть защищён от насилия.",
-    right2:"Право на уважение",
-    right2d:"Мнение и достоинство каждого ребёнка важны.",
-    right3:"Право на образование",
-    right3d:"Каждый ребёнок имеет право учиться и развиваться.",
-    aboutTitle:"О нашей акции",
-    aboutText:"20 ноября во всём мире отмечается Всемирный день ребёнка. Эта акция напоминает о важности защиты прав детей, взаимного уважения и недопустимости жестокого обращения.",
-    step1:"ШАГ 1 · ДАННЫЕ УЧАСТНИКА",
-    regTitle:"Регистрация участника",
-    regDesc:"Заполни данные, чтобы начать тестирование.",
-    surname:"Фамилия",firstname:"Имя",grade:"Класс",
-    continue:"Продолжить →",back:"Назад",
-    questionLabel:"ВОПРОС",
-    finished:"Тест завершён!",home:"На главную",
-    footer:"Вместе за детство без жестокости ❤️",
-    question:"Вопрос",next:"Следующий вопрос →",
-    finish:"Завершить тест",
-    nameError:"Заполни фамилию, имя и выбери класс.",
-    answerError:"Выбери один вариант ответа.",
-    resultGood:"Отличный результат! Ты хорошо знаешь права ребёнка.",
-    resultMid:"Хорошая работа! Продолжай узнавать о своих правах.",
-    resultLow:"Продолжай изучать свои права. Каждый ребёнок достоин уважения.",
-    sending:"Отправляем результат в Google Таблицу...",
-    sent:"Результат успешно сохранён!",
-    failed:"Не удалось сохранить результат. Сообщи организатору.",
-    correct:"Правильно",wrong:"Неправильно"
-  },
-  kz: {
-    date:"20 ҚАРАША · ДҮНИЕЖҮЗІЛІК БАЛАЛАР КҮНІ",
-    title:"Құрметсіздік пен қатыгездіксіз балалық шақ",
-    subtitle:"Әрбір бала бақытты, қауіпсіз әрі лайықты балалық шаққа құқылы.",
-    start:"Тест тапсыру →",
-    right1:"Қорғалуға құқылы",
-    right1d:"Әрбір бала зорлық-зомбылықтан қорғалуы тиіс.",
-    right2:"Құрметке құқылы",
-    right2d:"Әрбір баланың пікірі мен қадір-қасиеті маңызды.",
-    right3:"Білім алуға құқылы",
-    right3d:"Әрбір бала білім алуға және дамуға құқылы.",
-    aboutTitle:"Акция туралы",
-    aboutText:"20 қарашада бүкіл әлемде Дүниежүзілік балалар күні атап өтіледі. Бұл акция балалардың құқықтарын қорғаудың, өзара құрмет пен қатыгездікке жол бермеудің маңыздылығын еске салады.",
-    step1:"1-ҚАДАМ · ҚАТЫСУШЫ ТУРАЛЫ МӘЛІМЕТ",
-    regTitle:"Қатысушыны тіркеу",
-    regDesc:"Тестілеуді бастау үшін мәліметтерді толтыр.",
-    surname:"Тегі",firstname:"Аты",grade:"Сыныбы",
-    continue:"Жалғастыру →",back:"Артқа",
-    questionLabel:"СҰРАҚ",
-    finished:"Тест аяқталды!",home:"Басты бетке",
-    footer:"Қатыгездіксіз балалық шақ үшін бірге болайық ❤️",
-    question:"Сұрақ",next:"Келесі сұрақ →",
-    finish:"Тестті аяқтау",
-    nameError:"Тегіңді, атыңды және сыныбыңды көрсет.",
-    answerError:"Жауап нұсқасын таңда.",
-    resultGood:"Тамаша нәтиже! Сен бала құқықтарын жақсы білесің.",
-    resultMid:"Жақсы нәтиже! Өз құқықтарыңды білуге ұмтыла бер.",
-    resultLow:"Өз құқықтарыңды зерделеуді жалғастыр. Әрбір бала құрметке лайық.",
-    sending:"Нәтиже Google кестесіне жіберілуде...",
-    sent:"Нәтиже сәтті сақталды!",
-    failed:"Нәтижені сақтау мүмкін болмады. Ұйымдастырушыға хабарла.",
-    correct:"Дұрыс",wrong:"Қате"
-  }
+ru: {
+title:"Детство без неуважения и жестокости",
+subtitle:"Акция ко Всемирному дню ребёнка",
+surname:"Фамилия",
+first:"Имя",
+grade:"Класс",
+section:"Буква класса",
+start:"Начать тест",
+next:"Ответить и продолжить",
+finish:"Завершить тест",
+question:"Вопрос",
+of:"из",
+result:"Результат тестирования",
+correct:"Правильных ответов",
+back:"На главную",
+choose:"Выберите ответ",
+required:"Заполните все поля",
+sending:"Сохранение результата...",
+saved:"Результат сохранён!",
+error:"Не удалось отправить результат. Проверьте подключение и попробуйте ещё раз.",
+thanks:"Спасибо за участие!",
+footer:"Школьная акция ко Дню защиты прав ребёнка"
+},
+kz: {
+title:"Құрметсіздік пен қатыгездіксіз балалық шақ",
+subtitle:"Дүниежүзілік балалар күніне арналған акция",
+surname:"Тегі",
+first:"Аты",
+grade:"Сынып",
+section:"Сынып әрпі",
+start:"Тестті бастау",
+next:"Жауап беру және жалғастыру",
+finish:"Тестті аяқтау",
+question:"Сұрақ",
+of:"ішінен",
+result:"Тестілеу нәтижесі",
+correct:"Дұрыс жауаптар",
+back:"Басты бетке",
+choose:"Жауапты таңдаңыз",
+required:"Барлық жолдарды толтырыңыз",
+sending:"Нәтиже сақталуда...",
+saved:"Нәтиже сақталды!",
+error:"Нәтижені жіберу мүмкін болмады. Қосылымды тексеріп, қайта көріңіз.",
+thanks:"Қатысқаныңызға рақмет!",
+footer:"Бала құқықтарын қорғау күніне арналған мектеп акциясы"
+}
 };
 
-// Демонстрационные вопросы.
-// Полные комплекты вопросов для 1–11 классов
-// будут добавлены после согласования содержания.
-const questionBank = {
-  ru: [
-    {q:"Какой международный документ закрепляет права детей?",a:["Устав школы","Конвенция о правах ребёнка","Правила дорожного движения","Трудовой кодекс"],c:1},
-    {q:"Имеет ли каждый ребёнок право на образование?",a:["Да","Нет","Только отличники","Только взрослые"],c:0},
-    {q:"Что нужно сделать, если ты стал свидетелем травли?",a:["Присоединиться","Смеяться","Обратиться к взрослому, которому доверяешь","Игнорировать"],c:2},
-    {q:"Что означает уважение к другому человеку?",a:["Оскорблять","Учитывать его достоинство и мнение","Угрожать","Высмеивать"],c:1},
-    {q:"Кто должен защищать права ребёнка?",a:["Только друзья","Только одноклассники","Государство, родители и ответственные взрослые","Никто"],c:2},
-    {q:"Имеет ли ребёнок право выражать своё мнение?",a:["Да","Нет","Только дома","Только письменно"],c:0},
-    {q:"Что такое буллинг?",a:["Дружба","Систематическая травля и унижение","Спортивная игра","Помощь другу"],c:1},
-    {q:"Что следует делать при угрозах и насилии?",a:["Молчать","Скрывать","Обратиться за помощью к надёжному взрослому","Мстить"],c:2},
-    {q:"Все ли дети имеют равные права?",a:["Только старшие","Только отличники","Да","Только взрослые"],c:2},
-    {q:"Как следует относиться к личным границам другого человека?",a:["Уважать их","Игнорировать","Нарушать ради шутки","Высмеивать"],c:0}
-  ],
-  kz: [
-    {q:"Балалардың құқықтарын бекітетін халықаралық құжат қалай аталады?",a:["Мектеп жарғысы","Бала құқықтары туралы конвенция","Жол қозғалысы ережелері","Еңбек кодексі"],c:1},
-    {q:"Әрбір баланың білім алуға құқығы бар ма?",a:["Иә","Жоқ","Тек үздік оқушылардың","Тек ересектердің"],c:0},
-    {q:"Егер сен қорлаудың куәсі болсаң, не істеу керек?",a:["Қосылу","Күлу","Сенетін ересек адамға хабарлау","Елемеу"],c:2},
-    {q:"Басқа адамды құрметтеу дегеніміз не?",a:["Қорлау","Оның қадір-қасиеті мен пікірін ескеру","Қорқыту","Мазақ ету"],c:1},
-    {q:"Баланың құқықтарын кім қорғауы тиіс?",a:["Тек достары","Тек сыныптастары","Мемлекет, ата-аналар және жауапты ересектер","Ешкім"],c:2},
-    {q:"Баланың өз пікірін білдіруге құқығы бар ма?",a:["Иә","Жоқ","Тек үйде","Тек жазбаша түрде"],c:0},
-    {q:"Буллинг дегеніміз не?",a:["Достық","Жүйелі түрде қудалау және қорлау","Спорттық ойын","Досқа көмектесу"],c:1},
-    {q:"Қорқыту немесе зорлық-зомбылық жағдайында не істеу керек?",a:["Үндемеу","Жасыру","Сенімді ересек адамнан көмек сұрау","Кек алу"],c:2},
-    {q:"Барлық балалардың құқықтары тең бе?",a:["Тек ересектерде","Тек үздік оқушыларда","Иә","Тек үлкендерде"],c:2},
-    {q:"Басқа адамның жеке шекарасына қалай қарау керек?",a:["Құрметтеу","Елемеу","Әзіл үшін бұзу","Мазақ ету"],c:0}
-  ]
-};
+const t = key => translations[language][key];
 
-function setLanguage(lang) {
-  language = lang;
-  document.documentElement.lang = lang;
-  document.getElementById("ruBtn").classList.toggle("active",lang==="ru");
-  document.getElementById("kzBtn").classList.toggle("active",lang==="kz");
-
-  document.querySelectorAll("[data-i18n]").forEach(el=>{
-    const key=el.dataset.i18n;
-    el.textContent=translations[lang][key] || el.textContent;
-  });
-
-  document.getElementById("surname").placeholder=translations[lang].surname;
-  document.getElementById("firstName").placeholder=translations[lang].firstname;
-  if (questions.length && document.getElementById("quiz").classList.contains("active")) {
-    questions=questionBank[lang];
-    currentQuestion=0;
-    score=0;
-    answersLog=[];
-    renderQuestion();
-  }
+function renderHome() {
+app.innerHTML = `
+<div class="panel center">
+<div class="logo">🧒🏻🛡️</div>
+<h1>${t("title")}</h1>
+<p>${t("subtitle")}</p>
+<div class="lang">
+<button class="${language==="ru"?"primary":"secondary"}" onclick="changeLanguage('ru')">Русский</button>
+<button class="${language==="kz"?"primary":"secondary"}" onclick="changeLanguage('kz')">Қазақша</button>
+</div>
+</div>
+<div class="panel">
+<h2>${language==="ru"?"Регистрация участника":"Қатысушыны тіркеу"}</h2>
+<label>${t("surname")}</label>
+<input id="surname" autocomplete="family-name" placeholder="${t("surname")}">
+<label>${t("first")}</label>
+<input id="firstName" autocomplete="given-name" placeholder="${t("first")}">
+<label>${t("grade")}</label>
+<select id="grade">
+<option value="">—</option>
+${Array.from({length:11},(_,i)=>`<option value="${i+1}">${i+1}</option>`).join("")}
+</select>
+<label>${t("section")}</label>
+<select id="section">
+<option value="">—</option>
+${["А","Ә","Б","В","Г","Ғ","Д","Е","Ё","Ж","З","И","Й","К","Қ","Л","М","Н","О","Ө","П","Р","С","Т","У","Ұ","Ү","Ф","Х","Ц","Ч","Ш","Э","Ю","Я"].map(x=>`<option>${x}</option>`).join("")}
+</select>
+<button class="primary" onclick="startQuiz()">${t("start")} →</button>
+</div>
+<div class="footer">${t("footer")}</div>`;
 }
 
-function showPage(id) {
-  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
-  document.getElementById(id).classList.add("active");
-  window.scrollTo({top:0,behavior:"smooth"});
-}
-
-function goHome() {
-  showPage("home");
+function changeLanguage(lang) {
+language = lang;
+renderHome();
 }
 
 function startQuiz() {
-  const surname=document.getElementById("surname").value.trim();
-  const firstName=document.getElementById("firstName").value.trim();
-  const grade=document.getElementById("grade").value;
-  const section=document.getElementById("section").value;
-  const error=document.getElementById("formError");
+const surname = document.getElementById("surname").value.trim();
+const firstName = document.getElementById("firstName").value.trim();
+const grade = Number(document.getElementById("grade").value);
+const section = document.getElementById("section").value;
 
-  if(!surname || !firstName || !grade || !section) {
-    error.textContent=translations[language].nameError;
-    return;
-  }
+if (!surname || !firstName || !grade || !section) {
+alert(t("required"));
+return;
+}
 
-  participant={surname,firstName,grade:Number(grade),section,language};
-  questions=questionBank[language];
-  currentQuestion=0;
-  score=0;
-  answersLog=[];
-  startedAt=Date.now();
-
-  document.getElementById("classDisplay").textContent=grade+" "+section;
-  showPage("quiz");
-  renderQuestion();
+student = {surname, firstName, grade, section};
+const group = getGroup(grade);
+currentQuestions = questionBank[language][group].map(q => ({
+q:q[0], a:q[1].slice(), c:q[2]
+}));
+currentIndex = 0;
+score = 0;
+answersLog = [];
+selectedAnswer = null;
+startedAt = Date.now();
+renderQuestion();
 }
 
 function renderQuestion() {
-  const q=questions[currentQuestion];
-  selected=null;
-
-  document.getElementById("questionCount").textContent=
-    `${translations[language].question} ${currentQuestion+1} / ${questions.length}`;
-
-  document.getElementById("progressBar").style.width=
-    ((currentQuestion+1)/questions.length*100)+"%";
-
-  document.getElementById("questionText").textContent=q.q;
-  document.getElementById("quizError").textContent="";
-
-  const container=document.getElementById("answerOptions");
-  container.innerHTML="";
-
-  q.a.forEach((answer,i)=>{
-    const btn=document.createElement("button");
-    btn.className="answer-option";
-    btn.textContent=String.fromCharCode(65+i)+". "+answer;
-
-    btn.onclick=()=>{
-      selected=i;
-      container.querySelectorAll("button").forEach(b=>b.classList.remove("selected"));
-      btn.classList.add("selected");
-    };
-
-    container.appendChild(btn);
-  });
-
-  document.getElementById("nextBtn").textContent=
-    currentQuestion===questions.length-1
-    ? translations[language].finish
-    : translations[language].next;
+const q = currentQuestions[currentIndex];
+app.innerHTML = `
+<div class="panel">
+<div class="small">${student.grade} ${student.section} · ${student.surname} ${student.firstName}</div>
+<div class="progress"><div style="width:${currentIndex/currentQuestions.length*100}%"></div></div>
+<p>${t("question")} ${currentIndex+1} ${t("of")} ${currentQuestions.length}</p>
+<h2>${q.q}</h2>
+<div id="options">
+${q.a.map((answer,i)=>`<button class="option" onclick="selectOption(${i})" id="option${i}">${String.fromCharCode(65+i)}. ${answer}</button>`).join("")}
+</div>
+<button class="primary" id="nextButton" disabled onclick="submitAnswer()">${currentIndex===currentQuestions.length-1?t("finish"):t("next")}</button>
+</div>
+<div class="footer">${t("footer")}</div>`;
 }
 
-function nextQuestion() {
-  if(selected===null) {
-    document.getElementById("quizError").textContent=
-      translations[language].answerError;
-    return;
-  }
+function selectOption(index) {
+selectedAnswer = index;
+document.querySelectorAll(".option").forEach((el,i)=>{
+el.classList.toggle("selected",i===index);
+});
+document.getElementById("nextButton").disabled = false;
+}
 
-  const q=questions[currentQuestion];
-  const isCorrect=selected===q.c;
+function submitAnswer() {
+if (selectedAnswer === null) {
+alert(t("choose"));
+return;
+}
 
-  if(isCorrect) score++;
+const q = currentQuestions[currentIndex];
+const correct = selectedAnswer === q.c;
+if (correct) score++;
 
-  answersLog.push({
-    question:q.q,
-    selectedAnswer:q.a[selected],
-    correctAnswer:q.a[q.c],
-    isCorrect
-  });
+answersLog.push({
+question:q.q,
+selected:q.a[selectedAnswer],
+correctAnswer:q.a[q.c],
+isCorrect:correct
+});
 
-  if(currentQuestion<questions.length-1) {
-    currentQuestion++;
-    renderQuestion();
-  } else {
-    finishQuiz();
-  }
+selectedAnswer = null;
+currentIndex++;
+
+if (currentIndex < currentQuestions.length) {
+renderQuestion();
+} else {
+finishQuiz();
+}
 }
 
 async function finishQuiz() {
-  showPage("result");
+const total = currentQuestions.length;
+const durationSeconds = Math.round((Date.now()-startedAt)/1000);
+const percent = Math.round(score/total*100);
 
-  const percent=Math.round(score/questions.length*100);
-  const duration=Math.round((Date.now()-startedAt)/1000);
-  const t=translations[language];
+app.innerHTML = `
+<div class="panel center">
+<div class="logo">🏆</div>
+<h1>${t("result")}</h1>
+<div class="result">${score}/${total}</div>
+<p>${t("correct")}: ${percent}%</p>
+<p>${t("sending")}</p>
+<div id="saveStatus" class="small"></div>
+</div>`;
 
-  document.getElementById("participantName").textContent=
-    participant.surname+" "+participant.firstName+" · "+
-    participant.grade+" "+participant.section;
+const payload = {
+action:"submit",
+surname:student.surname,
+firstName:student.firstName,
+grade:student.grade,
+section:student.section,
+language,
+score,
+total,
+durationSeconds,
+answers:answersLog
+};
 
-  document.getElementById("scoreDisplay").textContent=
-    score+" / "+questions.length;
+try {
+await fetch(API_URL,{
+method:"POST",
+mode:"no-cors",
+headers:{"Content-Type":"text/plain;charset=utf-8"},
+body:JSON.stringify(payload)
+});
 
-  document.getElementById("resultMessage").textContent=
-    percent>=80?t.resultGood:percent>=50?t.resultMid:t.resultLow;
-
-  const status=document.getElementById("savingStatus");
-  status.textContent=t.sending;
-
-  const payload={
-    action:"submit",
-    surname:participant.surname,
-    firstName:participant.firstName,
-    grade:participant.grade,
-    section:participant.section,
-    language:participant.language,
-    score,
-    total:questions.length,
-    durationSeconds:duration,
-    answers:answersLog
-  };
-
-  try {
-    const response=await fetch(API_URL,{
-      method:"POST",
-      body:JSON.stringify(payload)
-    });
-
-    const data=await response.json();
-
-    if(!data.ok) throw new Error(data.message);
-
-    status.textContent="✓ "+t.sent;
-    status.style.color="#16834b";
-
-  } catch(error) {
-    console.error(error);
-    status.textContent="⚠ "+t.failed;
-    status.style.color="#c03945";
-  }
+document.getElementById("saveStatus").textContent = t("saved");
+} catch(error) {
+document.getElementById("saveStatus").textContent = t("error");
 }
 
-setLanguage("ru");
+app.innerHTML += `
+<div class="panel center">
+<h2>${t("thanks")}</h2>
+<button class="primary" onclick="renderHome()">${t("back")}</button>
+</div>
+<div class="footer">${t("footer")}</div>`;
+}
+
+renderHome();
